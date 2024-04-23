@@ -92,7 +92,7 @@ export const runAction = async (input: Input): Promise<void> => {
 
   if (github.context.eventName === 'pull_request' && filesNotCovered.length > 0) {
     core.info(filesNotCovered.join('\n'));
-    throw new Error("Not all files covered by CODEOWNERS");
+    core.setFailed("Not all files covered by CODEOWNERS");
   }
 }
 

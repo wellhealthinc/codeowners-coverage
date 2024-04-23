@@ -12086,7 +12086,7 @@ const runAction = (input) => __awaiter(void 0, void 0, void 0, function* () {
     core.info(`Files not covered: ${filesNotCovered.length}`);
     if (github.context.eventName === 'pull_request' && filesNotCovered.length > 0) {
         core.info(filesNotCovered.join('\n'));
-        throw new Error("Not all files covered by CODEOWNERS");
+        core.setFailed("Not all files covered by CODEOWNERS");
     }
 });
 exports.runAction = runAction;
