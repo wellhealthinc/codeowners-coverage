@@ -19,7 +19,7 @@ export function getInputs(): Input {
   return result;
 }
 
-export const runAction = async (octokit: ReturnType<typeof github.getOctokit>, input: Input): Promise<void> => {
+export const runAction = async (input: Input): Promise<void> => {
   let allFiles: string[] = [];
   if (input.files) {
     allFiles = input.files.split(' ');
@@ -99,8 +99,7 @@ export const runAction = async (octokit: ReturnType<typeof github.getOctokit>, i
 const run = async (): Promise<void> => {
   try {
     const input = getInputs();
-    const octokit: ReturnType<typeof github.getOctokit> = github.getOctokit(input.token);
-    return runAction(octokit, input);
+    return runAction(input);
   } catch (error) {
     core.startGroup(error instanceof Error ? error.message : JSON.stringify(error));
     core.info(JSON.stringify(error, null, 2));
