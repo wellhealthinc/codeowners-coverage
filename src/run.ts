@@ -90,28 +90,9 @@ export const runAction = async (octokit: ReturnType<typeof github.getOctokit>, i
   const filesNotCovered = allFilesClean.filter(f => !filesCovered.includes(f));
   core.info(`Files not covered: ${filesNotCovered.length}`);
 
-  if (github.context.eventName === 'pull_request') {
-    const checkResponse = await octokit.rest.checks.create({
-      owner: github.context.repo.owner,
-      repo: github.context.repo.repo,
-      name: 'Changed Files have CODEOWNERS',
-      head_sha: github.context.payload.pull_request?.head.sha || github.context.payload.after || github.context.sha,
-      status: 'completed',
-      completed_at: new Date(),
-      output: {
-        title: 'PR Next Version publish successful!',
-        summary: `A version for pull request is **published**. version: **${process.env.CURRENT_VERSION}**`,
-        annotations: filesNotCovered.map(file => ({
-          path: file,
-          annotation_level: 'failure',
-          message: 'File not covered by CODEOWNERS',
-          start_line: 0,
-          end_line: 1,
-        })).slice(0, 50),
-      },
-      conclusion: coveragePercent < 100 ? 'failure' : 'success',
-    });
-    console.log('Check Response OK: ', checkResponse.status);
+  if (github.context.eventName === 'pull_request' && filesNotCovered.length > 0) {
+    core.info(filesNotCovered.join('\n'));
+    throw new Error("Not all files covered by CODEOWNERS");
   }
 }
 
