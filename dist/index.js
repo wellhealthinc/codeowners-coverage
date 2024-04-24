@@ -12014,8 +12014,7 @@ function getInputs() {
     return result;
 }
 exports.getInputs = getInputs;
-const runAction = (octokit, input) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+const runAction = (input) => __awaiter(void 0, void 0, void 0, function* () {
     let allFiles = [];
     if (input.files) {
         allFiles = input.files.split(' ');
@@ -12085,12 +12084,6 @@ const runAction = (octokit, input) => __awaiter(void 0, void 0, void 0, function
     });
     const filesNotCovered = allFilesClean.filter(f => !filesCovered.includes(f));
     core.info(`Files not covered: ${filesNotCovered.length}`);
-    filesCovered.forEach(file => {
-        core.error('File not covered by CODEOWNERS', {
-            title: 'Coverage',
-            file: file
-        });
-    });
     if (github.context.eventName === 'pull_request') {
         filesCovered.forEach(file => {
             core.error('File not covered by CODEOWNERS', {
@@ -12098,35 +12091,13 @@ const runAction = (octokit, input) => __awaiter(void 0, void 0, void 0, function
                 file: file
             });
         });
-        const checkResponse = yield octokit.rest.checks.create({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            name: 'Changed Files have CODEOWNERS',
-            head_sha: ((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.sha) || github.context.payload.after || github.context.sha,
-            status: 'completed',
-            completed_at: new Date(),
-            output: {
-                title: 'PR Next Version publish successful!',
-                summary: `A version for pull request is **published**. version: **${process.env.CURRENT_VERSION}**`,
-                annotations: filesNotCovered.map(file => ({
-                    path: file,
-                    annotation_level: 'failure',
-                    message: 'File not covered by CODEOWNERS',
-                    start_line: 1,
-                    end_line: 2,
-                })).slice(0, 50),
-            },
-            conclusion: coveragePercent < 100 ? 'failure' : 'success',
-        });
-        console.log('Check Response OK: ', checkResponse.status);
     }
 });
 exports.runAction = runAction;
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const input = getInputs();
-        const octokit = github.getOctokit(input.token);
-        return (0, exports.runAction)(octokit, input);
+        return (0, exports.runAction)(input);
     }
     catch (error) {
         core.startGroup(error instanceof Error ? error.message : JSON.stringify(error));
