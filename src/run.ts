@@ -90,7 +90,21 @@ export const runAction = async (octokit: ReturnType<typeof github.getOctokit>, i
   const filesNotCovered = allFilesClean.filter(f => !filesCovered.includes(f));
   core.info(`Files not covered: ${filesNotCovered.length}`);
 
+  filesCovered.forEach(file => {
+    core.error('File not covered by CODEOWNERS', {
+      title: 'Coverage',
+      file: file
+    });
+  });
+
   if (github.context.eventName === 'pull_request') {
+    filesCovered.forEach(file => {
+      core.error('File not covered by CODEOWNERS', {
+        title: 'Coverage',
+        file: file
+      });
+    });
+
     const checkResponse = await octokit.rest.checks.create({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
