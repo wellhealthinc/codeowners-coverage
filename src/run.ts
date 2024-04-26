@@ -90,7 +90,7 @@ export const runAction = async (input: Input): Promise<void> => {
   const filesNotCovered = allFilesClean.filter(f => !filesCovered.includes(f));
   core.info(`Files not covered: ${filesNotCovered.length}`);
 
-  if (github.context.eventName === 'pull_request') {
+  if (github.context.eventName === 'pull_request' && filesNotCovered.length > 0) {
     filesNotCovered.forEach(file => {
       console.log(file);
       core.error('File not covered by CODEOWNERS', {
@@ -98,6 +98,7 @@ export const runAction = async (input: Input): Promise<void> => {
         file: file
       });
     });
+    core.setFailed('Not all files are covered by CODEOWNERS');
   }
 }
 
