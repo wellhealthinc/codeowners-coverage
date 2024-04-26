@@ -12085,7 +12085,8 @@ const runAction = (input) => __awaiter(void 0, void 0, void 0, function* () {
     const filesNotCovered = allFilesClean.filter(f => !filesCovered.includes(f));
     core.info(`Files not covered: ${filesNotCovered.length}`);
     if (github.context.eventName === 'pull_request') {
-        filesCovered.forEach(file => {
+        filesNotCovered.forEach(file => {
+            console.log(file);
             core.error('File not covered by CODEOWNERS', {
                 title: 'Coverage',
                 file: file

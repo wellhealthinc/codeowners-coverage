@@ -91,7 +91,8 @@ export const runAction = async (input: Input): Promise<void> => {
   core.info(`Files not covered: ${filesNotCovered.length}`);
 
   if (github.context.eventName === 'pull_request') {
-    filesCovered.forEach(file => {
+    filesNotCovered.forEach(file => {
+      console.log(file);
       core.error('File not covered by CODEOWNERS', {
         title: 'Coverage',
         file: file
