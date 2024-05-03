@@ -19,7 +19,7 @@ export function getInputs(): Input {
   return result;
 }
 
-export const runAction = async (octokit: ReturnType<typeof github.getOctokit>, input: Input): Promise<void> => {
+export const runAction = async (input: Input): Promise<void> => {
   let allFiles: string[] = [];
   if (input.files) {
     allFiles = input.files.split(' ');
@@ -90,36 +90,22 @@ export const runAction = async (octokit: ReturnType<typeof github.getOctokit>, i
   const filesNotCovered = allFilesClean.filter(f => !filesCovered.includes(f));
   core.info(`Files not covered: ${filesNotCovered.length}`);
 
-  if (github.context.eventName === 'pull_request') {
-    const checkResponse = await octokit.rest.checks.create({
-      owner: github.context.repo.owner,
-      repo: github.context.repo.repo,
-      name: 'Changed Files have CODEOWNERS',
-      head_sha: github.context.payload.pull_request?.head.sha || github.context.payload.after || github.context.sha,
-      status: 'completed',
-      completed_at: new Date(),
-      output: {
-        title: 'PR Next Version publish successful!',
-        summary: `A version for pull request is **published**. version: **${process.env.CURRENT_VERSION}**`,
-        annotations: filesNotCovered.map(file => ({
-          path: file,
-          annotation_level: 'failure',
-          message: 'File not covered by CODEOWNERS',
-          start_line: 0,
-          end_line: 1,
-        })).slice(0, 50),
-      },
-      conclusion: coveragePercent < 100 ? 'failure' : 'success',
+  if (github.context.eventName === 'pull_request' && filesNotCovered.length > 0) {
+    filesNotCovered.forEach(file => {
+      console.log(file);
+      core.error('File not covered by CODEOWNERS', {
+        title: 'Coverage',
+        file: file
+      });
     });
-    console.log('Check Response OK: ', checkResponse.status);
+    core.setFailed('Not all files are covered by CODEOWNERS');
   }
 }
 
 const run = async (): Promise<void> => {
   try {
     const input = getInputs();
-    const octokit: ReturnType<typeof github.getOctokit> = github.getOctokit(input.token);
-    return runAction(octokit, input);
+    return runAction(input);
   } catch (error) {
     core.startGroup(error instanceof Error ? error.message : JSON.stringify(error));
     core.info(JSON.stringify(error, null, 2));
